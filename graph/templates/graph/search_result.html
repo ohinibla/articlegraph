@@ -1,0 +1,21 @@
+<html>
+    <head>
+    </head>
+    <body>
+    {% if result %}
+        <form action="{% url 'graph:result' %}" method="post">
+        {% csrf_token %}
+            {% for i in result %}
+                    <input type="radio" id="res{{ forloop.counter }}" name="select" value="{{ i.0 }}">
+                    <label for="res{{ forloop.counter }}"><a href="{{ i.1 }}">{{ i.0 }}</a></label>
+                    <br>
+            {% endfor %}
+            <br>
+            <input type="submit" value="Inter" name='method'>
+            <input type="submit" value="Intra" name='method'>
+    {% else %}
+        <p>No Sites</p>
+    {% endif %}
+    <p><a href="{% url 'graph:main' %}">Go Back</a></p>
+    </body>
+</html>

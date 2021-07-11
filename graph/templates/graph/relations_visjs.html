@@ -1,0 +1,45 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+</head>
+<body>
+  <div id="nw"></div>
+  <p style="z-index:1">
+      <ul>
+      {% for i in nodes %}
+          <li>{{ i }}</li>
+      {% endfor %}
+      </ul>
+  </p>
+  <script type="text/javascript">
+
+  // create an array with nodes
+  var nodes = new vis.DataSet({{ nodes|safe }});
+
+  // create an array with edges
+  var edges = new vis.DataSet({{ edges|safe }});
+
+  // create a network
+  var container = document.getElementById("nw");
+  var data = {
+    nodes: nodes,
+    edges: edges
+  };
+    var options = {
+        nodes: {
+          shape: "dot",
+          size: 20,
+          font: {
+          strokeWidth: 3,
+            size: 10,
+          },
+          borderWidth: 2,
+        },
+        edges: {
+          width: 2,
+        },
+      };
+    var network = new vis.Network(container, data, options);
+</script>
+</body>
+</html>
