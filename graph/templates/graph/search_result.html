@@ -1,21 +1,54 @@
 <html>
     <head>
+        <style>
+            body {
+                background-image: linear-gradient(to left, lightgray, white, lightgray);
+                background-repeat: no-repeat;
+                background-attachment: fixed; 
+                background-size: cover;
+                margin: auto;
+            }
+            .content {
+                text-align: center;
+                padding-top: 60px;
+            }
+            .result {
+                background-color: #e6f5ff;
+                text-align: left;
+                width: 50%;
+                padding: 5px;
+                margin: auto;
+                margin-bottom: 10px;
+            }
+            .result:hover {
+                background-color: #b3daff;
+            }
+            .searchmatch {
+                font-weight: bold;
+            }
+        </style>
     </head>
     <body>
-    {% if result %}
-        <form action="{% url 'graph:result' %}" method="post">
-        {% csrf_token %}
-            {% for i in result %}
-                    <input type="radio" id="res{{ forloop.counter }}" name="select" value="{{ i.0 }}">
-                    <label for="res{{ forloop.counter }}"><a href="{{ i.1 }}">{{ i.0 }}</a></label>
-                    <br>
-            {% endfor %}
-            <br>
-            <input type="submit" value="Inter" name='method'>
-            <input type="submit" value="Intra" name='method'>
-    {% else %}
-        <p>No Sites</p>
-    {% endif %}
-    <p><a href="{% url 'graph:main' %}">Go Back</a></p>
+    <div class="content">
+        {% if result %}
+            <form action="{% url 'graph:result' %}" method="post">
+                {% csrf_token %}
+                {% for i in result %}
+                    <div class="result">
+                        <input type="radio" id="res{{ forloop.counter }}" name="select" value="{{ i.0 }}">
+                        <label for="res{{ forloop.counter }}"><a href="{{ i.1 }}">{{ i.0 }}</a></label>
+                        <br>
+                        <p style="tex>{{ i.2|safe }}...</p>
+                    </div>
+                {% endfor %}
+                <br>
+                <input type="submit" value="Inter" name='method'>
+                <input type="submit" value="Intra" name='method'>
+        {% else %}
+                <p>No Sites</p>
+            {% endif %}
+            </form>
+            <p><a href="{% url 'graph:main' %}">Go Back</a></p>
+        </div>
     </body>
 </html>

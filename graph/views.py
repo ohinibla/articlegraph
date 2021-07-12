@@ -45,13 +45,7 @@ class Result(View):
             rel_method = visjs.IntraGraph_v2
         nodes, edges = rel_method(SEARCHPAGE)
         ctx = {"nodes": nodes, "edges": edges}
-        return render(request, 'graph/relations_visjs.html', ctx)  
-    
-    
-    
-    
-    
-    
+        return render(request, 'graph/relations_visjs.html', ctx)
     
     
     

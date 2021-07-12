@@ -8,7 +8,7 @@ Created on Tue Jun 29 08:48:58 2021
 
 import requests
 import json
-
+import re
 
 URL = "https://en.wikipedia.org/w/api.php"
 
@@ -23,16 +23,20 @@ def get_search_result(SEARCHPAGE):
         "format": "json",
         "gsrsearch": SEARCHPAGE,
         "prop": "info",
-        "inprop": "url"
+        "inprop": "url",
+        "gsrprop": "snippet"
     }
     
     R = S.get(url=URL, params=PARAMS)
     
     DATA = R.json()
     links = []
+    # return DATA
     for i in DATA['query']['pages']:
         links.append((DATA['query']['pages'][i]['title'],
-                      DATA['query']['pages'][i]['fullurl']))
+                      DATA['query']['pages'][i]['fullurl'],
+                      # re.sub('<span.*?</span>', '', DATA['query']['pages'][i]['snippet'])))
+                      DATA['query']['pages'][i]['snippet']))
     return links
 
 def get_links(SEARCHPAGE):
