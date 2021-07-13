@@ -1,18 +1,69 @@
 <html>
 <head>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        a:link {
+          color: #FDAC53;
+          background-color: transparent;
+          text-decoration: none;
+        }
+        
+        a:visited {
+          color: #E9897E;
+          background-color: transparent;
+          text-decoration: none;
+        }
+        
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 1000;
+            overflow: auto;
+            background: #686868;
+            z-index: 1;
+            opacity: 95%;
+            color: white;
+            text-align: center;
+            }
+            
+            #sidebar_img {
+                width:200;
+                height: auto;
+                margin: 0 auto;
+                filter: drop-shadow(5px 5px 5px Gray);
+            }
+            
+            .sidebar_p {
+                text-align: justify;
+                padding-left: 5px;
+                padding-right: 10px;
+            }
+            
+            #nw {
+                background: linear-gradient(Gainsboro, white, Gainsboro);
+                margin: -8px;
+            }
+            
+            .vis-network {
+                padding-bottom: 15px;
+            }
+    </style>
 </head>
 <body>
+    <div class="fullscreen">
+      <h1>{{ nodes.0.label }}</h1>
+      <img id="sidebar_img" src="{{ image }}">
+      <br><br>
+      <div class="sidebar_p">{{ extract|safe }}</div>
+      <br><br>
+      <hr style="width:50%;text-align:center;"> 
+      <p class="sidebar_p"><b>GRAPH WIKI<b> analyzes wikipedia articles page links and their relations and construct color groups based on wikibase data of the relative subjects using (<a href="https://www.wikidata.org/wiki/Property:P31">Instance of</a>) or (<a href="https://www.wikidata.org/wiki/Property:P279">Subclass of</a>) properties. additionally uses <a href="https://www.djangoproject.com/">django framework</a> and using <a href="https://visjs.org/">vis.js framework</a> for visualizations.</p>
+    </div>
   <div id="nw"></div>
-  <p style="z-index:1">
-      <ul>
-      {% for i in nodes %}
-          <li>{{ i }}</li>
-      {% endfor %}
-      </ul>
-  </p>
-  <script type="text/javascript">
 
+  <script type="text/javascript">
   // create an array with nodes
   var nodes = new vis.DataSet({{ nodes|safe }});
 
@@ -38,8 +89,40 @@
         edges: {
           width: 2,
         },
+        physics: {
+            stabilization: false,
+        },
       };
+    function draw() {
+        nodes.push({"id": 10000, "label": "test"});
+    };
     var network = new vis.Network(container, data, options);
+</script>
+<script type="text/javascript">
+    var root_node = nodes.get(0);
+    root_node.shape = "dot";
+    root_node.color = {
+      background: '#ffffff',
+    }
+    nodes.update(root_node);
+</script>
+<script type="text/javascript">
+    var mynetwork = document.getElementById("nw");
+    var x = -mynetwork.clientWidth / 2 + 1250;
+    var y = -mynetwork.clientHeight / 2 + 25;
+    var step = 70;
+    function add_legend() {
+    {% for i in legends %}
+        nodes.add({"id": 1000 + parseInt({{ forloop.counter }}),
+         "label": "{{i}}", "group": "{{i}}",
+         x: x,
+         y: y + step * parseInt({{ forloop.counter }}),
+         value: 1,
+         fixed: true,
+         physics: false});
+    {% endfor %}
+    };
+    add_legend();
 </script>
 </body>
 </html>

@@ -174,7 +174,29 @@ def get_links_withurl(SEARCHPAGE):
     out = {}
     for i in DATA['query']['pages']:
         out[DATA['query']['pages'][i]['title']] = DATA['query']['pages'][i]['fullurl']
-    
+
+def get_extract_image(SEARCHPAGE):
+    S = requests.session()
+    PARAMS = {
+    	"action": "query",
+    	"format": "json",
+    	"prop": "extracts|pageimages",
+    	"titles": SEARCHPAGE,
+    	"exintro": 1,
+    	"piprop": "original",
+    }
+    R = S.get(url=URL, params=PARAMS)
+    DATA = R.json()
+    out = {}
+    # return DATA
+    try:
+        for i in DATA['query']['pages']:
+            out['extract'] = DATA['query']['pages'][i]['extract']
+            out['image'] = DATA['query']['pages'][i]['original']['source']
+    except KeyError:
+        out['image'] = '/static/graph/logo.webp'
+    return out
+
 def relations(src_node, dest_nodes_list):
     outer = []
     dest_len = len(dest_nodes_list) // 50

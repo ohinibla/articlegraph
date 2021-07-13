@@ -29,20 +29,37 @@ def IntraGraph_v2(SEARCHPAGE):
     # return relations
     in_relations = intra_relations_v2(SEARCHPAGE)
     Q = get_wikidata(_relations)
-    # return Q
+    
+    Q_unique = []
+    for i in Q.values():
+        if i not in Q_unique:
+            Q_unique.append(i)
+
+
     _relations[SEARCHPAGE] = None
     id = 0
     
     for s_node in relations:
         id_dict[s_node] = id
-        nodes.append({"id": id_dict[s_node], "label": s_node, "group": Q.get(_relations[s_node], "None")})
+        nodes.append({"id": id_dict[s_node], "label": s_node, "group": Q.get(_relations[s_node], "None"), "value": id})
         id += 1
-    print(id_dict)
+    
     for k, v in in_relations.items():
         for target in v:
             try:
-                edges.append({"from": id_dict[k], "to": id_dict[target]})
+                edges.append({"from": id_dict[k], "to": id_dict[target], "arrows": "to"})
             except KeyError:
                 continue
 
-    return nodes, edges
+    return nodes, edges, Q_unique
+
+        # nodes.push({
+        #   id: 1001,
+        #   x: x,
+        #   y: y + step,
+        #   label: "Switch",
+        #   group: "switch",
+        #   value: 1,
+        #   fixed: true,
+        #   physics: false,
+        # });

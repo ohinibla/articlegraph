@@ -37,14 +37,13 @@ class main(View):
 #         return render(request, 'graph/relations_alchemy.html')
     
 class Result(View):
-    def post(self, request):
-        SEARCHPAGE = self.request.POST['select']
-        if self.request.POST['method'] == 'Inter':
-            rel_method = visjs.Graph
-        elif self.request.POST['method'] == 'Intra':
-            rel_method = visjs.IntraGraph_v2
-        nodes, edges = rel_method(SEARCHPAGE)
-        ctx = {"nodes": nodes, "edges": edges}
+    def get(self, request):
+        SEARCHPAGE = self.request.GET['name']
+        nodes, edges, nodes_legend = visjs.IntraGraph_v2(SEARCHPAGE)
+        info = api.get_extract_image(SEARCHPAGE)
+        extract = info['extract']
+        image = info['image']
+        ctx = {"nodes": nodes, "edges": edges, 'image': image, 'extract': extract, "legends": nodes_legend}
         return render(request, 'graph/relations_visjs.html', ctx)
     
     
