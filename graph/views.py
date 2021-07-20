@@ -43,7 +43,15 @@ class Result(View):
         info = api.get_extract_image(SEARCHPAGE)
         extract = info['extract']
         image = info['image']
-        ctx = {"nodes": nodes, "edges": edges, 'image': image, 'extract': extract, "legends": nodes_legend}
+        ctx = {
+            "nodes": nodes, 
+            "edges": edges, 
+            "image": image, 
+            "extract": extract, 
+            "legends": nodes_legend, 
+            "title": request.GET['name'],
+            "title_link": request.GET['address']
+            }
         return render(request, 'graph/relations_visjs.html', ctx)
     
     

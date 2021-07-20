@@ -2,6 +2,7 @@
 
 from graph.wiki_api import *
 from graph.sparql import *
+get_links_withQ
 
 def Graph(SEARCHPAGE):
     
@@ -13,7 +14,7 @@ def Graph(SEARCHPAGE):
     id = 1
     for s_node in relations:
         id_dict[s_node] = id
-        nodes.append({"id": id_dict[s_node], "label": s_node, "group": Q.get(relations[s_node], "None")})
+        nodes.append({"id": id_dict[s_node], "label": s_node, "group": Q.get(relations[s_node][0], "None")})
         edges.append({"from": 0, "to": id_dict[s_node]})
         id += 1
         
@@ -25,8 +26,8 @@ def IntraGraph_v2(SEARCHPAGE):
     edges = []
     id_dict = {}
     _relations = get_links_withQ(SEARCHPAGE)
-    relations = [SEARCHPAGE] + list(_relations.keys())
-    # return relations
+    _relations[SEARCHPAGE] = [None, 0]
+    relations = list(_relations.keys())
     in_relations = intra_relations_v2(SEARCHPAGE)
     Q = get_wikidata(_relations)
     
@@ -35,19 +36,16 @@ def IntraGraph_v2(SEARCHPAGE):
         if i not in Q_unique:
             Q_unique.append(i)
 
-
-    _relations[SEARCHPAGE] = None
     id = 0
     
     for s_node in relations:
         id_dict[s_node] = id
-        nodes.append({"id": id_dict[s_node], "label": s_node, "group": Q.get(_relations[s_node], "None"), "value": id})
+        nodes.append({"id": id_dict[s_node], "label": s_node, "group": Q.get(_relations[s_node][0], "None"), "value": _relations[s_node][1]})
         id += 1
-    
     for k, v in in_relations.items():
         for target in v:
             try:
-                edges.append({"from": id_dict[k], "to": id_dict[target], "arrows": "to"})
+                edges.append({"from": id_dict[k], "to": id_dict[target]})
             except KeyError:
                 continue
 

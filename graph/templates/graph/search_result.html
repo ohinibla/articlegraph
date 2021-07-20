@@ -42,7 +42,7 @@
     <div class="content">
         {% if result %}
             {% for i in result %}
-                <a href="{% url 'graph:result' %}?name={{ i.0 }}">
+                <a href="{% url 'graph:result' %}?name={{ i.0 }}&address={{ i.1 }}">
                 <div class="result">
                     <div style="font-weight: bold; color: red;">{{ i.0 }}</div>
                     <br>

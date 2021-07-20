@@ -13,7 +13,7 @@ def get_wikidata(Q):
     
     url = 'https://query.wikidata.org/sparql'
     
-    _Q = ['wd:' + i for i in Q.values() if i != None]
+    _Q = ['wd:' + i[0] for i in Q.values() if i[0] != None]
     _Q = ' '.join(_Q)
 
     _query = """

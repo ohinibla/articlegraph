@@ -9,8 +9,10 @@ Created on Tue Jun 29 08:48:58 2021
 import requests
 import json
 import re
+from datetime import date, timedelta
 
 URL = "https://en.wikipedia.org/w/api.php"
+yesterday = str(date.today() - timedelta(days=1))
 
 def get_search_result(SEARCHPAGE):
 
@@ -128,22 +130,23 @@ def get_links_withQ(SEARCHPAGE):
     R = S.get(url=URL, params=PARAMS)
     DATA = R.json()
     # with open('test.json', 'w') as f:
-        # json.dump(DATA, f)
-    # print(json.dumps(DATA, indent=4))
+    #     json.dump(DATA, f)
+    print(json.dumps(DATA, indent=4))
     redirects = DATA['query'].get('redirects', {})
     red_dic = {}
     for i in redirects:
         red_dic[i['to']] = i['from']
     # return redirects
     pages = DATA['query']['pages']
-    None_handle = {'wikibase_item': None, 'pageviews': 0}
+    None_handle = {yesterday: 0, 'wikibase_item': None}
     for v in pages.values():
-        try:
-            out[red_dic.get(v['title'], v['title'])] = v.get('pageprops', None_handle)['wikibase_item']
-            # out[v['title']] = [v.get('pageprops', None_handle)['wikibase_item'],
-            #        v.get('pageviews', None_handle)[next(iter(v['pageviews']))]]
-        except KeyError:
-            out[red_dic.get(v['title'], v['title'])] = v.get('pageprops', None_handle)['wikibase_item']
+        if v.get('pageviews', None_handle)[yesterday] != None:
+            out[red_dic.get(v['title'], v['title'])] = [v.get('pageprops', None_handle)['wikibase_item'],
+                                                        v.get('pageviews', None_handle)[yesterday]]
+        else:
+            out[red_dic.get(v['title'], v['title'])] = [v.get('pageprops', None_handle)['wikibase_item'], 0]
+                                                        
+
     # while 'continue' in DATA:
     #     PARAMS['plcontinue'] = DATA['continue']['plcontinue']
     #     R = S.get(url=URL, params=PARAMS)
