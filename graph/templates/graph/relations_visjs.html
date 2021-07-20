@@ -2,16 +2,20 @@
 <head>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <style>
+        body {
+            background: linear-gradient(Gainsboro, white, Gainsboro);
+        }
+        
         a:link {
-          color: #FDAC53;
-          background-color: transparent;
-          text-decoration: none;
+            color: #FDAC53;
+            background-color: transparent;
+            text-decoration: none;
         }
         
         a:visited {
-          color: #E9897E;
-          background-color: transparent;
-          text-decoration: none;
+            color: #E9897E;
+            background-color: transparent;
+            text-decoration: none;
         }
         
         .fullscreen {
@@ -29,7 +33,7 @@
             }
             
             #sidebar_img {
-                width:200;
+                width: 200;
                 height: auto;
                 margin: 0 auto;
                 filter: drop-shadow(5px 5px 5px Gray);
@@ -42,12 +46,21 @@
             }
             
             #nw {
-                background: linear-gradient(Gainsboro, white, Gainsboro);
-                margin: -8px;
+                margin-left: -8px;
+                height: 98%;
             }
             
             .vis-network {
                 padding-bottom: 15px;
+            }
+            
+            #legend {
+                position: absolute;
+                top: 0;
+                width: 150px;
+                z-index: 1;
+                opacity: 90%;
+                height:: 20%,
             }
     </style>
 </head>
@@ -62,13 +75,16 @@
       <p class="sidebar_p"><b>GRAPH WIKI<b> analyzes wikipedia articles page links and their relations and construct color groups based on wikibase data of the relative subjects using (<a href="https://www.wikidata.org/wiki/Property:P31">Instance of</a>) or (<a href="https://www.wikidata.org/wiki/Property:P279">Subclass of</a>) properties. additionally uses <a href="https://www.djangoproject.com/">django framework</a> and using <a href="https://visjs.org/">vis.js framework</a> for visualizations.</p>
     </div>
   <div id="nw"></div>
+  <div id="legend" onmouseover="document.getElementById('legend').style.height='90%'" onmouseout="document.getElementById('legend').style.height='20%'"></div>
 
   <script type="text/javascript">
   // create an array with nodes
   var nodes = new vis.DataSet({{ nodes|safe }});
+  var nodes_legend = new vis.DataSet();
 
   // create an array with edges
   var edges = new vis.DataSet({{ edges|safe }});
+  var edges_legend = new vis.DataSet();
 
   // create a network
   var container = document.getElementById("nw");
@@ -76,6 +92,14 @@
     nodes: nodes,
     edges: edges
   };
+  
+  // create a legend
+  var container_legend = document.getElementById("legend");
+  var data_legend = {
+    nodes: nodes_legend,
+    edges: edges_legend
+  };
+  
     var options = {
         nodes: {
           shape: "dot",
@@ -93,10 +117,25 @@
             stabilization: false,
         },
       };
-    function draw() {
-        nodes.push({"id": 10000, "label": "test"});
-    };
+
+    var options_legend = {
+        nodes: {
+          shape: "dot",
+          size: 20,
+          font: {
+          strokeWidth: 3,
+            size: 10,
+          },
+          borderWidth: 2,
+        },
+        edges: {
+          width: 2,
+        },
+      };
+      
     var network = new vis.Network(container, data, options);
+    var network_legend = new vis.Network(container_legend, data_legend, options_legend);
+    
 </script>
 <script type="text/javascript">
     var root_node = nodes.get(0);
@@ -107,13 +146,13 @@
     nodes.update(root_node);
 </script>
 <script type="text/javascript">
-    var mynetwork = document.getElementById("nw");
-    var x = -mynetwork.clientWidth / 2 + 1250;
+    var mynetwork = document.getElementById("legend");
+    var x = -mynetwork.clientWidth / 2 + 175;
     var y = -mynetwork.clientHeight / 2 + 25;
     var step = 70;
     function add_legend() {
     {% for i in legends %}
-        nodes.add({"id": 1000 + parseInt({{ forloop.counter }}),
+        nodes_legend.add({"id": 1000 + parseInt({{ forloop.counter }}),
          "label": "{{i}}", "group": "{{i}}",
          x: x,
          y: y + step * parseInt({{ forloop.counter }}),
@@ -123,6 +162,11 @@
     {% endfor %}
     };
     add_legend();
+</script>
+<script>
+    var nw = document.getElementById("nw")
+    document.getElementById("legend").style.left = nw.clientWidth - 150;
+    network_legend.fit();
 </script>
 </body>
 </html>
