@@ -131,7 +131,7 @@ def get_links_withQ(SEARCHPAGE):
     DATA = R.json()
     # with open('test.json', 'w') as f:
     #     json.dump(DATA, f)
-    print(json.dumps(DATA, indent=4))
+    # print(json.dumps(DATA, indent=4))
     redirects = DATA['query'].get('redirects', {})
     red_dic = {}
     for i in redirects:
