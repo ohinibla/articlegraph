@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View, generic
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.edit import CreateView, UpdateView
@@ -22,10 +22,15 @@ class main(View):
     def get(self, request):
         return render(request, 'graph/main.html')
     def post(self, request):
-        ctx = {'result': api.get_search_result(request.POST['SEARCHPAGE'])}
-        return render(request, 'graph/search_result.html', ctx)
-    
-
+        if request.POST['go'] == 'Search' and request.POST['SEARCHPAGE'] == '':
+            return render(request, 'graph/main.html', {'status': 'style="display: block"'})
+        elif request.POST['go'] == 'Search':
+            ctx = {'result': api.get_search_result(request.POST['SEARCHPAGE'])}
+            return render(request, 'graph/search_result.html', ctx)
+        elif request.POST['go'] == 'Random':
+            (r_name, r_address) = api.get_randompage()
+            return redirect('relations?name='+r_name+'&'+'address='+r_address)
+        
 # class Result(View):
 #     def post(self, request):
 #         SEARCHPAGE = self.request.POST['select']
@@ -37,51 +42,23 @@ class main(View):
 #         return render(request, 'graph/relations_alchemy.html')
     
 class Result(View):
-    def post(self, request):
-        SEARCHPAGE = self.request.POST['select']
-        if self.request.POST['method'] == 'Inter':
-            rel_method = visjs.Graph
-        elif self.request.POST['method'] == 'Intra':
-            rel_method = visjs.IntraGraph_v2
-        nodes, edges = rel_method(SEARCHPAGE)
-        ctx = {"nodes": nodes, "edges": edges}
-        return render(request, 'graph/relations_visjs.html', ctx)  
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    def get(self, request):
+        SEARCHPAGE = self.request.GET['name']
+        nodes, edges, nodes_legend = visjs.IntraGraph_v2(SEARCHPAGE)
+        info = api.get_extract_image(SEARCHPAGE)
+        extract = info['extract']
+        image = info['image']
+        ctx = {
+            "nodes": nodes, 
+            "edges": edges, 
+            "image": image, 
+            "extract": extract, 
+            "legends": nodes_legend, 
+            "title": request.GET['name'],
+            "title_link": request.GET['address']
+            }
+        return render(request, 'graph/relations_visjs.html', ctx)
+      
 '''   
 class IndexView(generic.ListView):
     context_object_name = 'sites'

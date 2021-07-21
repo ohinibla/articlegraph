@@ -8,9 +8,11 @@ Created on Tue Jun 29 08:48:58 2021
 
 import requests
 import json
-
+import re
+from datetime import date, timedelta
 
 URL = "https://en.wikipedia.org/w/api.php"
+yesterday = str(date.today() - timedelta(days=1))
 
 def get_search_result(SEARCHPAGE):
 
@@ -23,17 +25,43 @@ def get_search_result(SEARCHPAGE):
         "format": "json",
         "gsrsearch": SEARCHPAGE,
         "prop": "info",
-        "inprop": "url"
+        "inprop": "url",
+        "gsrprop": "snippet"
     }
     
     R = S.get(url=URL, params=PARAMS)
     
     DATA = R.json()
     links = []
+    # return DATA
     for i in DATA['query']['pages']:
         links.append((DATA['query']['pages'][i]['title'],
-                      DATA['query']['pages'][i]['fullurl']))
+                      DATA['query']['pages'][i]['fullurl'],
+                      # re.sub('<span.*?</span>', '', DATA['query']['pages'][i]['snippet'])))
+                      DATA['query']['pages'][i]['snippet']))
     return links
+
+def get_randompage():
+    
+    S = requests.Session()
+    
+    PARAMS = {
+    	"action": "query",
+    	"format": "json",
+    	"prop": "info",
+    	"generator": "random",
+    	"inprop": "url",
+    	"grnnamespace": "0"
+    }
+    
+    R = S.get(url=URL, params=PARAMS)
+    DATA = R.json()
+    
+    pages = DATA['query']['pages']
+    for k, v in pages.items():
+        r_name = pages[k]['title']
+        r_address = pages[k]['fullurl']
+    return (r_name, r_address)
 
 def get_links(SEARCHPAGE):
     
@@ -124,7 +152,7 @@ def get_links_withQ(SEARCHPAGE):
     R = S.get(url=URL, params=PARAMS)
     DATA = R.json()
     # with open('test.json', 'w') as f:
-        # json.dump(DATA, f)
+    #     json.dump(DATA, f)
     # print(json.dumps(DATA, indent=4))
     redirects = DATA['query'].get('redirects', {})
     red_dic = {}
@@ -132,14 +160,15 @@ def get_links_withQ(SEARCHPAGE):
         red_dic[i['to']] = i['from']
     # return redirects
     pages = DATA['query']['pages']
-    None_handle = {'wikibase_item': None, 'pageviews': 0}
+    None_handle = {yesterday: 0, 'wikibase_item': None}
     for v in pages.values():
-        try:
-            out[red_dic.get(v['title'], v['title'])] = v.get('pageprops', None_handle)['wikibase_item']
-            # out[v['title']] = [v.get('pageprops', None_handle)['wikibase_item'],
-            #        v.get('pageviews', None_handle)[next(iter(v['pageviews']))]]
-        except KeyError:
-            out[red_dic.get(v['title'], v['title'])] = v.get('pageprops', None_handle)['wikibase_item']
+        if v.get('pageviews', None_handle)[yesterday] != None:
+            out[red_dic.get(v['title'], v['title'])] = [v.get('pageprops', None_handle)['wikibase_item'],
+                                                        v.get('pageviews', None_handle)[yesterday]]
+        else:
+            out[red_dic.get(v['title'], v['title'])] = [v.get('pageprops', None_handle)['wikibase_item'], 0]
+                                                        
+
     # while 'continue' in DATA:
     #     PARAMS['plcontinue'] = DATA['continue']['plcontinue']
     #     R = S.get(url=URL, params=PARAMS)
@@ -170,7 +199,29 @@ def get_links_withurl(SEARCHPAGE):
     out = {}
     for i in DATA['query']['pages']:
         out[DATA['query']['pages'][i]['title']] = DATA['query']['pages'][i]['fullurl']
-    
+
+def get_extract_image(SEARCHPAGE):
+    S = requests.session()
+    PARAMS = {
+    	"action": "query",
+    	"format": "json",
+    	"prop": "extracts|pageimages",
+    	"titles": SEARCHPAGE,
+    	"exintro": 1,
+    	"piprop": "original",
+    }
+    R = S.get(url=URL, params=PARAMS)
+    DATA = R.json()
+    out = {}
+    # return DATA
+    try:
+        for i in DATA['query']['pages']:
+            out['extract'] = DATA['query']['pages'][i]['extract']
+            out['image'] = DATA['query']['pages'][i]['original']['source']
+    except KeyError:
+        out['image'] = '/static/graph/logo.webp'
+    return out
+
 def relations(src_node, dest_nodes_list):
     outer = []
     dest_len = len(dest_nodes_list) // 50

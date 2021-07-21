@@ -1,21 +1,59 @@
 <html>
     <head>
+        <style>
+            body {
+                background-image: linear-gradient(to left, lightgray, white, lightgray);
+                background-repeat: no-repeat;
+                background-attachment: fixed; 
+                background-size: cover;
+                margin: auto;
+            }
+            .content {
+                text-align: center;
+                padding-top: 0;
+                display: table;
+                margin: 0 auto;
+            }
+            .content a {
+                text-decoration: none !important;
+                color: black;
+                margin: auto;
+            }
+            .result {
+                background-color: #e6f5ff;
+                text-align: left;
+                width: 70%;
+                padding: 5px;
+                margin: auto;
+                margin-bottom: 10px;
+                margin-top: 10px;
+            }
+            .result:hover {
+                background-color: #b3daff;
+                filter: drop-shadow(0 5px 5px Gray);
+            }
+            .searchmatch {
+                font-weight: bold;
+            }
+        </style>
     </head>
     <body>
-    {% if result %}
-        <form action="{% url 'graph:result' %}" method="post">
-        {% csrf_token %}
+    <h1><center>first 10 result of {{ request.POST.SEARCHPAGE }} in WIKIPEDIA:</center></h1>
+    <div class="content">
+        {% if result %}
             {% for i in result %}
-                    <input type="radio" id="res{{ forloop.counter }}" name="select" value="{{ i.0 }}">
-                    <label for="res{{ forloop.counter }}"><a href="{{ i.1 }}">{{ i.0 }}</a></label>
+                <a href="{% url 'graph:result' %}?name={{ i.0 }}&address={{ i.1 }}">
+                <div class="result">
+                    <div style="font-weight: bold; color: red;">{{ i.0 }}</div>
                     <br>
+                    <p>{{ i.2|safe }}...</p>
+                </div>
+                </a>
             {% endfor %}
-            <br>
-            <input type="submit" value="Inter" name='method'>
-            <input type="submit" value="Intra" name='method'>
-    {% else %}
-        <p>No Sites</p>
-    {% endif %}
-    <p><a href="{% url 'graph:main' %}">Go Back</a></p>
+        {% else %}
+            <p>No Sites</p>
+        {% endif %}
+            <p><a href="{% url 'graph:main' %}">Go Back</a></p>
+        </div>
     </body>
 </html>

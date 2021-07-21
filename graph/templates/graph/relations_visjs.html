@@ -1,31 +1,214 @@
 <html>
 <head>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(Gainsboro, white, Gainsboro);
+        }
+        
+        a:link {
+            color: #FDAC53;
+            background-color: transparent;
+            text-decoration: none;
+        }
+        
+        a:visited {
+            color: #E9897E;
+            background-color: transparent;
+            text-decoration: none;
+        }
+        
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 1000;
+            overflow: auto;
+            background: #686868;
+            z-index: 1;
+            opacity: 95%;
+            color: white;
+            text-align: center;
+            }
+            
+            #sidebar_img {
+                width: 200;
+                height: auto;
+                margin: 0 auto;
+                filter: drop-shadow(5px 5px 5px Gray);
+            }
+            
+            .sidebar_p {
+                text-align: justify;
+                padding-left: 5px;
+                padding-right: 10px;
+            }
+            
+            #nw {
+                margin-left: -8px;
+                height: 98%;
+            }
+            
+            .vis-network {
+                padding-bottom: 15px;
+            }
+            
+            #legend {
+                position: absolute;
+                top: 0;
+                width: 150px;
+                z-index: 1;
+                opacity: 90%;
+                height:: 20%,
+            }
+    </style>
 </head>
 <body>
+    <div class="fullscreen">
+      <h1>{{ title }}</h1>
+      <img id="sidebar_img" src="{{ image }}">
+      <br><br>
+      <div class="sidebar_p">{{ extract|safe }}
+      &rarr;  <a href="{{ title_link }}">Continue reading on Wikipedia</a>
+      </div>
+      <br><br>
+      <hr style="width:50%;text-align:center;"> 
+      <p class="sidebar_p"><b>Article Wiki<b> requests wikipedia articles page links and their relations and construct color groups based on wikibase data of the relative subjects using (<a href="https://www.wikidata.org/wiki/Property:P31">Instance of</a>) or (<a href="https://www.wikidata.org/wiki/Property:P279">Subclass of</a>) properties. additionally nodes are weighted by their pageviews stats on wikipedia.
+      <br>Article Wiki uses <a href="https://www.djangoproject.com/">django framework</a> and <a href="https://visjs.org/">vis.js framework</a> for visualizations.</p>
+    </div>
   <div id="nw"></div>
-  <p style="z-index:1">
-      <ul>
-      {% for i in nodes %}
-          <li>{{ i }}</li>
-      {% endfor %}
-      </ul>
-  </p>
-  <script type="text/javascript">
+  <div id="legend" onmouseover="zoom_in()" onmouseout="zoom_out()"></div>
+<script type="text/javascript">
+var network;
+var allNodes;
+var highlightActive = false;
 
+var nodesDataset = new vis.DataSet({{ nodes|safe }}); // these come from WorldCup2014.js
+var edgesDataset = new vis.DataSet({{ edges|safe }}); // these come from WorldCup2014.js
+
+function redrawAll() {
+    var container = document.getElementById("nw");
+    var options = {
+    nodes: {
+        shape: "dot",
+        size: 20,
+        font: {
+        strokeWidth: 3,
+        size: 10,
+          },
+      borderWidth: 2,
+    },
+    edges: {
+      width: 2,
+    },
+    physics: {
+    },
+      };
+      
+    var data = { nodes: nodesDataset, edges: edgesDataset }; // Note: data is coming from ./datasources/WorldCup2014.js
+
+    network = new vis.Network(container, data, options);
+
+  // get a JSON object
+    allNodes = nodesDataset.get({ returnType: "Object" });
+
+    network.on("click", neighbourhoodHighlight);
+};
+
+function neighbourhoodHighlight(params) {
+  // if something is selected:
+  if (params.nodes.length > 0) {
+highlightActive = true;
+var i, j;
+var selectedNode = params.nodes[0];
+var degrees = 2;
+
+// mark all nodes as hard to read.
+for (var nodeId in allNodes) {
+  allNodes[nodeId].color = "rgba(200,200,200,0.5)";
+  if (allNodes[nodeId].hiddenLabel === undefined) {
+allNodes[nodeId].hiddenLabel = allNodes[nodeId].label;
+allNodes[nodeId].label = undefined;
+  }
+}
+var connectedNodes = network.getConnectedNodes(selectedNode);
+var allConnectedNodes = [];
+
+// get the second degree nodes
+for (i = 1; i < degrees; i++) {
+  for (j = 0; j < connectedNodes.length; j++) {
+allConnectedNodes = allConnectedNodes.concat(
+  network.getConnectedNodes(connectedNodes[j])
+);
+  }
+}
+
+// all second degree nodes get a different color and their label back
+for (i = 0; i < allConnectedNodes.length; i++) {
+  allNodes[allConnectedNodes[i]].color = "rgba(150,150,150,0.45)";
+  if (allNodes[allConnectedNodes[i]].hiddenLabel !== undefined) {
+allNodes[allConnectedNodes[i]].label =
+  allNodes[allConnectedNodes[i]].hiddenLabel;
+allNodes[allConnectedNodes[i]].hiddenLabel = undefined;
+  }
+}
+
+// all first degree nodes get their own color and their label back
+for (i = 0; i < connectedNodes.length; i++) {
+  allNodes[connectedNodes[i]].color = undefined;
+  if (allNodes[connectedNodes[i]].hiddenLabel !== undefined) {
+allNodes[connectedNodes[i]].label =
+  allNodes[connectedNodes[i]].hiddenLabel;
+allNodes[connectedNodes[i]].hiddenLabel = undefined;
+  }
+}
+
+// the main node gets its own color and its label back.
+allNodes[selectedNode].color = undefined;
+if (allNodes[selectedNode].hiddenLabel !== undefined) {
+  allNodes[selectedNode].label = allNodes[selectedNode].hiddenLabel;
+  allNodes[selectedNode].hiddenLabel = undefined;
+}
+  } else if (highlightActive === true) {
+// reset all nodes
+for (var nodeId in allNodes) {
+  allNodes[nodeId].color = undefined;
+  if (allNodes[nodeId].hiddenLabel !== undefined) {
+allNodes[nodeId].label = allNodes[nodeId].hiddenLabel;
+allNodes[nodeId].hiddenLabel = undefined;
+  }
+}
+highlightActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  for (nodeId in allNodes) {
+if (allNodes.hasOwnProperty(nodeId)) {
+  updateArray.push(allNodes[nodeId]);
+}
+  }
+  nodesDataset.update(updateArray);
+}
+
+redrawAll();
+</script>
+  <script type="text/javascript">
   // create an array with nodes
-  var nodes = new vis.DataSet({{ nodes|safe }});
+  var nodes_legend = new vis.DataSet();
 
   // create an array with edges
-  var edges = new vis.DataSet({{ edges|safe }});
-
-  // create a network
-  var container = document.getElementById("nw");
-  var data = {
-    nodes: nodes,
-    edges: edges
+  var edges_legend = new vis.DataSet();
+  
+  // create a legend
+  var container_legend = document.getElementById("legend");
+  var data_legend = {
+    nodes: nodes_legend,
+    edges: edges_legend
   };
-    var options = {
+  
+    var options_legend = {
         nodes: {
           shape: "dot",
           size: 20,
@@ -38,8 +221,47 @@
         edges: {
           width: 2,
         },
-      };
-    var network = new vis.Network(container, data, options);
+      physics: {
+          barnesHut: {
+            springLength: 600,
+            centralGravity: 0.1,
+        }, 
+      },
+    };
+      
+    var network_legend = new vis.Network(container_legend, data_legend, options_legend);
+    
+</script>
+<script type="text/javascript">
+    var mynetwork = document.getElementById("legend");
+    var x = -mynetwork.clientWidth / 2 + 175;
+    var y = -mynetwork.clientHeight / 2 + 25;
+    var step = 70;
+    function add_legend() {
+    {% for i in legends %}
+        nodes_legend.add({"id": 1000 + parseInt({{ forloop.counter }}),
+         "label": "{{i}}", "group": "{{i}}",
+         x: x,
+         y: y + step * parseInt({{ forloop.counter }}),
+         value: 1,
+         fixed: true,
+         physics: false});
+    {% endfor %}
+    };
+    add_legend();
+</script>
+<script>
+    var nw = document.getElementById("nw")
+    document.getElementById("legend").style.left = nw.clientWidth - 150;
+    network_legend.fit();
+</script>
+<script>
+    function zoom_in() {
+        document.getElementById('legend').style.height='95%';
+    };
+    function zoom_out() {
+        document.getElementById('legend').style.height='20%';
+    };
 </script>
 </body>
 </html>
