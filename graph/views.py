@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View, generic
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.edit import CreateView, UpdateView
@@ -22,10 +22,15 @@ class main(View):
     def get(self, request):
         return render(request, 'graph/main.html')
     def post(self, request):
-        ctx = {'result': api.get_search_result(request.POST['SEARCHPAGE'])}
-        return render(request, 'graph/search_result.html', ctx)
-    
-
+        if request.POST['go'] == 'Search' and request.POST['SEARCHPAGE'] == '':
+            return render(request, 'graph/main.html', {'status': 'style="display: block"'})
+        elif request.POST['go'] == 'Search':
+            ctx = {'result': api.get_search_result(request.POST['SEARCHPAGE'])}
+            return render(request, 'graph/search_result.html', ctx)
+        elif request.POST['go'] == 'Random':
+            (r_name, r_address) = api.get_randompage()
+            return redirect('relations?name='+r_name+'&'+'address='+r_address)
+        
 # class Result(View):
 #     def post(self, request):
 #         SEARCHPAGE = self.request.POST['select']
@@ -53,36 +58,7 @@ class Result(View):
             "title_link": request.GET['address']
             }
         return render(request, 'graph/relations_visjs.html', ctx)
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+      
 '''   
 class IndexView(generic.ListView):
     context_object_name = 'sites'

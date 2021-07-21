@@ -41,6 +41,28 @@ def get_search_result(SEARCHPAGE):
                       DATA['query']['pages'][i]['snippet']))
     return links
 
+def get_randompage():
+    
+    S = requests.Session()
+    
+    PARAMS = {
+    	"action": "query",
+    	"format": "json",
+    	"prop": "info",
+    	"generator": "random",
+    	"inprop": "url",
+    	"grnnamespace": "0"
+    }
+    
+    R = S.get(url=URL, params=PARAMS)
+    DATA = R.json()
+    
+    pages = DATA['query']['pages']
+    for k, v in pages.items():
+        r_name = pages[k]['title']
+        r_address = pages[k]['fullurl']
+    return (r_name, r_address)
+
 def get_links(SEARCHPAGE):
     
     S = requests.Session()

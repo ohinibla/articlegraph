@@ -31,20 +31,26 @@
                 text-decoration: none;
                 font-size: 16px;
                 filter: drop-shadow(0 5px 5px Gray);
+                margin: 5px;
                 }
             .button:active {
                 background-color: #0000ff;
-            }
+                }
+            .msg {
+                display: none;
+                }
         </style>
     </head>
     <body>
         <div class="content">
             <img src={% static graph %}graph/logo.webp style="width:300; padding-bottom: 50px;">
+            <div class="msg" {{status|safe}}"><b>Please fill in the blank!</b></div>
             <form action="" method="post">
                 <input type="text" id="SEARCHPAGE" name="SEARCHPAGE" placeholder="Search Wikipedia..">
                 <br>
                 <br>
-                <input type="submit" value="Search" class="button">
+                <input type="submit" name="go" value="Search" class="button">
+                <input type="submit" name="go" value="Random" class="button">
             </form>
         <div>
     </body>
