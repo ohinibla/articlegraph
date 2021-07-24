@@ -84,8 +84,8 @@ var network;
 var allNodes;
 var highlightActive = false;
 
-var nodesDataset = new vis.DataSet({{ nodes|safe }}); // these come from WorldCup2014.js
-var edgesDataset = new vis.DataSet({{ edges|safe }}); // these come from WorldCup2014.js
+var nodesDataset = new vis.DataSet({{ nodes|safe }});
+var edgesDataset = new vis.DataSet({{ edges|safe }});
 
 function redrawAll() {
     var container = document.getElementById("nw");
@@ -106,7 +106,7 @@ function redrawAll() {
     },
       };
       
-    var data = { nodes: nodesDataset, edges: edgesDataset }; // Note: data is coming from ./datasources/WorldCup2014.js
+    var data = { nodes: nodesDataset, edges: edgesDataset };
 
     network = new vis.Network(container, data, options);
 
@@ -221,12 +221,6 @@ redrawAll();
         edges: {
           width: 2,
         },
-      physics: {
-          barnesHut: {
-            springLength: 600,
-            centralGravity: 0.1,
-        }, 
-      },
     };
       
     var network_legend = new vis.Network(container_legend, data_legend, options_legend);
@@ -263,5 +257,6 @@ redrawAll();
         document.getElementById('legend').style.height='20%';
     };
 </script>
+
 </body>
 </html>

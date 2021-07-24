@@ -9,10 +9,8 @@ Created on Tue Jun 29 08:48:58 2021
 import requests
 import json
 import re
-from datetime import date, timedelta
 
 URL = "https://en.wikipedia.org/w/api.php"
-yesterday = str(date.today() - timedelta(days=1))
 
 def get_search_result(SEARCHPAGE):
 
@@ -135,6 +133,7 @@ def get_links_length(SEARCHPAGE):
 def get_links_withQ(SEARCHPAGE):
     
     S = requests.Session()
+    
     PARAMS = {
     	"action": "query",
     	"format": "json",
@@ -146,12 +145,12 @@ def get_links_withQ(SEARCHPAGE):
     	"ppprop": "wikibase_item",
     	"gplnamespace": "0",
     	"gpllimit": "max"
-}
+        }
     
     out = {}
     R = S.get(url=URL, params=PARAMS)
     DATA = R.json()
-    # with open('test.json', 'w') as f:
+    # with open('testDump/test.json', 'w') as f:
     #     json.dump(DATA, f)
     # print(json.dumps(DATA, indent=4))
     redirects = DATA['query'].get('redirects', {})
@@ -160,23 +159,29 @@ def get_links_withQ(SEARCHPAGE):
         red_dic[i['to']] = i['from']
     # return redirects
     pages = DATA['query']['pages']
-    None_handle = {yesterday: 0, 'wikibase_item': None}
+    None_handle = {'first_iter': 0, 'wikibase_item': None}
+    for v in pages.values():
+        yesterday_view = next(iter(v.get('pageviews', None_handle).values()))
+        if yesterday_view != None:
+            out[red_dic.get(v['title'], v['title'])] = [v.get('pageprops', None_handle)['wikibase_item'],
+                                                        yesterday_view]
+        else:
+            out[red_dic.get(v['title'], v['title'])] = [v.get('pageprops', None_handle)['wikibase_item'], 0]
+                                                        
+    # gpllimit max is already at 5000
+    '''
+    while 'continue' in DATA:
+        PARAMS['pvipcontinue'] = DATA['continue']['pvipcontinue']
+        R = S.get(url=URL, params=PARAMS)
+        DATA = R.json()
+    pages = DATA['query']['pages']
     for v in pages.values():
         if v.get('pageviews', None_handle)[yesterday] != None:
             out[red_dic.get(v['title'], v['title'])] = [v.get('pageprops', None_handle)['wikibase_item'],
                                                         v.get('pageviews', None_handle)[yesterday]]
         else:
             out[red_dic.get(v['title'], v['title'])] = [v.get('pageprops', None_handle)['wikibase_item'], 0]
-                                                        
-
-    # while 'continue' in DATA:
-    #     PARAMS['plcontinue'] = DATA['continue']['plcontinue']
-    #     R = S.get(url=URL, params=PARAMS)
-    #     DATA = R.json()
-    #     for k, v in pages.items():
-    #         for l in v['links']:
-    #             out.append(l['title'])
-                
+    '''
     return out
 
 def get_links_withurl(SEARCHPAGE):
@@ -276,6 +281,10 @@ def relations_v2(src_nodes_list, dest_nodes_list):
             
             R = S.get(url=URL, params=PARAMS)
             DATA = R.json()
+            # with open('./testDump/test'+str(j)+'.json', 'w') as f:
+            #     json.dump(DATA, f)
+                
+            # if 'batchcomplete' not in DATA: 
             pages = DATA['query']['pages']
             for i in pages:
                 title = DATA['query']['pages'][i]['title']
@@ -320,15 +329,3 @@ def intra_relations_dumb(SEARCHPAGE):
             except KeyError:
                 out[node] = [inner_node]
     return out
-
-''' lenth 
-{
-	"action": "query",
-	"format": "json",
-	"prop": "info",
-	"titles": "Babak",
-	"generator": "links",
-	"utf8": 1,
-	"gplnamespace": "0",
-	"gpllimit": "max"
-}'''
