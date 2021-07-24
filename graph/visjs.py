@@ -2,7 +2,7 @@
 
 from graph.wiki_api import *
 from graph.sparql import *
-get_links_withQ
+
 
 def Graph(SEARCHPAGE):
     

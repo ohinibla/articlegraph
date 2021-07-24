@@ -6,11 +6,6 @@ from django.urls import reverse, reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
-from .models import Site
-from .scripts import run
-
-from .scrap_wikipedia import *
-from . import alchemy
 from . import visjs
 from . import wiki_api as api
 

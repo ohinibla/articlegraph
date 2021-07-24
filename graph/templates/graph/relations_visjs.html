@@ -71,6 +71,8 @@
       <br><br>
       <div class="sidebar_p">{{ extract|safe }}
       &rarr;  <a href="{{ title_link }}">Continue reading on Wikipedia</a>
+      &rarr;  <a href="{% url 'graph:main' %}">Go back to the result page ({{title}})</a>
+      &rarr;  <a href="{% url 'graph:main' %}">Go back to the search page</a> 
       </div>
       <br><br>
       <hr style="width:50%;text-align:center;"> 
