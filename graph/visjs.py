@@ -50,14 +50,3 @@ def IntraGraph_v2(SEARCHPAGE):
                 continue
 
     return nodes, edges, Q_unique
-
-        # nodes.push({
-        #   id: 1001,
-        #   x: x,
-        #   y: y + step,
-        #   label: "Switch",
-        #   group: "switch",
-        #   value: 1,
-        #   fixed: true,
-        #   physics: false,
-        # });
